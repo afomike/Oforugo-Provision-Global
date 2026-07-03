@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}My Profile — Oforugo Provision Global{% endblock %}
+{% block content %}
+<div class="breadcrumb">
+    <div class="container breadcrumb-inner">
+        <a href="{{ url_for('shop.index') }}">Home</a>
+        <span class="sep">›</span>
+        <span>My Profile</span>
+    </div>
+</div>
+<div class="container">
+    <div class="profile-layout">
+        <div>
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">{{ (current_user.full_name or current_user.username)[0].upper() }}</div>
+                    <div class="profile-name">{{ current_user.full_name or current_user.username }}</div>
+                    <div class="profile-email">{{ current_user.email }}</div>
+                </div>
+                <div class="profile-body">
+                    <form method="POST" action="{{ url_for('auth.profile') }}">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="full_name" class="form-input" value="{{ current_user.full_name or '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" name="phone" class="form-input" value="{{ current_user.phone or '' }}" placeholder="08012345678">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Delivery Address</label>
+                            <textarea name="address" class="form-textarea" rows="3" placeholder="Your default delivery address">{{ current_user.address or '' }}</textarea>
+                        </div>
+                        <button type="submit" class="btn-green" style="width:100%;">Save Changes</button>
+                    </form>
+                    <div style="margin-top:16px;text-align:center;">
+                        <a href="{{ url_for('auth.logout') }}" style="color:var(--red);font-size:0.88rem;font-weight:600;">Sign Out</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:20px;">My Orders</h2>
+            {% if orders %}
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                {% for order in orders %}
+                <div class="card">
+                    <div class="card-body">
+                        <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:10px;">
+                            <div>
+                                <div style="font-weight:800;font-size:1rem;">Order #{{ order.id }}</div>
+                                <div style="font-size:0.82rem;color:var(--text-muted);">{{ order.created_at.strftime('%d %B %Y, %I:%M %p') }}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <span class="status-badge status-{{ order.status }}">{{ order.status.title() }}</span>
+                                <div style="font-weight:800;color:var(--green);font-size:1.05rem;margin-top:4px;">₦{{ "{:,.0f}".format(order.total_amount) }}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+                            {% for item in order.items %}
+                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;padding:4px 0;">
+                                <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                                <span style="color:var(--text-muted);">₦{{ "{:,.0f}".format(item.unit_price * item.quantity) }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:10px;">
+                            📍 {{ order.delivery_address[:60] }}{% if order.delivery_address|length > 60 %}…{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="cart-empty">
+                <div class="cart-empty-icon">📦</div>
+                <h3>No orders yet</h3>
+                <p>Start shopping to see your orders here.</p>
+                <br>
+                <a href="{{ url_for('shop.products') }}" class="btn-green">Shop Now</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

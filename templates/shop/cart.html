@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Shopping Cart — Oforugo Provision Global{% endblock %}
+{% block content %}
+
+<div class="breadcrumb">
+    <div class="container breadcrumb-inner">
+        <a href="{{ url_for('shop.index') }}">Home</a>
+        <span class="sep">›</span>
+        <span>Shopping Cart</span>
+    </div>
+</div>
+
+<div class="container">
+    {% if items %}
+    <div class="cart-layout">
+        <div>
+            <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:20px;">Your Cart ({{ items|length }} item{% if items|length != 1 %}s{% endif %})</h2>
+            <div class="cart-items">
+                {% for item in items %}
+                <div class="cart-item">
+                    <div class="cart-item-img">{{ item.product.category.icon or '📦' }}</div>
+                    <div class="cart-item-info">
+                        <a href="{{ url_for('shop.product_detail', product_id=item.product.id) }}">
+                            <div class="cart-item-name">{{ item.product.name }}</div>
+                        </a>
+                        <div class="cart-item-price">₦{{ "{:,.0f}".format(item.product.price) }} each</div>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">Subtotal: <strong style="color:var(--green)">₦{{ "{:,.0f}".format(item.product.price * item.quantity) }}</strong></div>
+                        <div class="cart-item-qty">
+                            <form action="{{ url_for('cart.update_cart', item_id=item.id) }}" method="POST" style="display:flex;gap:8px;align-items:center;">
+                                <button type="button" class="qty-btn-minus" style="background:var(--border);color:var(--text);padding:4px 10px;border:none;border-radius:4px;cursor:pointer;font-weight:700;">−</button>
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" style="width:60px;padding:6px;border:2px solid var(--border);border-radius:6px;text-align:center;font-size:0.88rem;">
+                                <button type="button" class="qty-btn-plus" style="background:var(--border);color:var(--text);padding:4px 10px;border:none;border-radius:4px;cursor:pointer;font-weight:700;">+</button>
+                                <button type="submit" style="background:var(--green);color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600;">Update</button>
+                            </form>
+                            <form action="{{ url_for('cart.remove_from_cart', item_id=item.id) }}" method="POST">
+                                <button type="submit" style="background:var(--red);color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600;">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div style="margin-top:20px;">
+                <a href="{{ url_for('shop.products') }}" style="color:var(--green);font-weight:600;font-size:0.9rem;">← Continue Shopping</a>
+            </div>
+        </div>
+
+        <div class="cart-summary">
+            <h3>Order Summary</h3>
+            {% for item in items %}
+            <div class="summary-row">
+                <span>{{ item.product.name[:25] }}{% if item.product.name|length > 25 %}…{% endif %} × {{ item.quantity }}</span>
+                <span>₦{{ "{:,.0f}".format(item.product.price * item.quantity) }}</span>
+            </div>
+            {% endfor %}
+            <div class="summary-row summary-total">
+                <span>Total</span>
+                <span>₦{{ "{:,.0f}".format(total) }}</span>
+            </div>
+            {% if total >= 20000 %}
+            <div style="background:var(--green-light);color:var(--green);padding:10px 12px;border-radius:8px;font-size:0.82rem;font-weight:600;margin:12px 0;">
+                🎉 You qualify for FREE delivery!
+            </div>
+            {% else %}
+            <div style="background:#fff3cd;color:#856404;padding:10px 12px;border-radius:8px;font-size:0.82rem;margin:12px 0;">
+                Add ₦{{ "{:,.0f}".format(20000 - total) }} more for free delivery
+            </div>
+            {% endif %}
+            <a href="{{ url_for('cart.checkout') }}" class="btn-primary" style="width:100%;display:block;text-align:center;margin-top:16px;">Proceed to Checkout →</a>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="cart-empty">
+        <div class="cart-empty-icon">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p>Browse our products and add items to get started.</p>
+        <br>
+        <a href="{{ url_for('shop.products') }}" class="btn-green">Browse Products</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Oforugo Provision Global{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="header-top">
+            <div class="container">
+                <span class="header-tagline">🇳🇬 Nigeria's Trusted Provision Store — Quality Products, Fair Prices</span>
+                <div class="header-top-links">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.profile') }}">{{ current_user.full_name or current_user.username }}</a>
+                        {% if current_user.is_admin %}
+                            <a href="{{ url_for('admin.dashboard') }}">Admin Panel</a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.logout') }}">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}">Login</a>
+                        <a href="{{ url_for('auth.register') }}">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="header-main">
+            <div class="container header-main-inner">
+                <a href="{{ url_for('shop.index') }}" class="logo">
+                    <div class="logo-icon">O</div>
+                    <div class="logo-text">
+                        <span class="logo-name">OFORUGO</span>
+                        <span class="logo-sub">PROVISION GLOBAL</span>
+                    </div>
+                </a>
+                <form class="search-form" action="{{ url_for('shop.products') }}" method="GET">
+                    <input type="text" name="search" placeholder="Search for rice, oil, beverages..." class="search-input" value="{{ request.args.get('search', '') }}">
+                    <button type="submit" class="search-btn">Search</button>
+                </form>
+                <div class="header-actions">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('cart.cart') }}" class="cart-btn">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-label">Cart</span>
+                        <span class="cart-badge" id="cart-count">0</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="cart-btn">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-label">Cart</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <nav class="nav">
+            <div class="container nav-inner">
+                <a href="{{ url_for('shop.index') }}">Home</a>
+                <a href="{{ url_for('shop.products') }}">All Products</a>
+                <a href="{{ url_for('shop.products') }}?category=1">Food &amp; Provisions</a>
+                <a href="{{ url_for('shop.products') }}?category=2">Beverages</a>
+                <a href="{{ url_for('shop.products') }}?category=3">Household</a>
+                <a href="{{ url_for('shop.products') }}?category=4">Snacks</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="flash-container container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                    <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+                </div>
+            {% endfor %}
+        {% endwith %}
+    </div>
+
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer" id="contact">
+        <div class="container footer-inner">
+            <div class="footer-col">
+                <div class="footer-logo">
+                    <div class="logo-icon">O</div>
+                    <div>
+                        <div class="logo-name">OFORUGO</div>
+                        <div class="logo-sub" style="color:#ccc">PROVISION GLOBAL</div>
+                    </div>
+                </div>
+                <p>Your trusted partner for quality provisions and household essentials. Serving Nigeria with the best products at the fairest prices.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{{ url_for('shop.index') }}">Home</a></li>
+                    <li><a href="{{ url_for('shop.products') }}">Products</a></li>
+                    <li><a href="{{ url_for('auth.register') }}">Create Account</a></li>
+                    <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Categories</h4>
+                <ul>
+                    <li><a href="{{ url_for('shop.products') }}?category=1">Food &amp; Provisions</a></li>
+                    <li><a href="{{ url_for('shop.products') }}?category=2">Beverages</a></li>
+                    <li><a href="{{ url_for('shop.products') }}?category=3">Household Items</a></li>
+                    <li><a href="{{ url_for('shop.products') }}?category=4">Snacks</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Us</h4>
+                <ul class="contact-list">
+                    <li>📍 Lagos, Nigeria</li>
+                    <li>📞 +234 800 000 0000</li>
+                    <li>✉️ info@oforugo.com</li>
+                    <li>⏰ Mon–Sat: 8am – 8pm</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>© 2024 Oforugo Provision Global. All rights reserved. | Designed with ❤️ for Nigeria</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% if current_user.is_authenticated %}
+    <script>
+        fetch('/cart/count').then(r => r.json()).then(d => {
+            const badge = document.getElementById('cart-count');
+            if (badge) badge.textContent = d.count;
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Checkout — Oforugo Provision Global{% endblock %}
+{% block content %}
+
+<div class="breadcrumb">
+    <div class="container breadcrumb-inner">
+        <a href="{{ url_for('shop.index') }}">Home</a>
+        <span class="sep">›</span>
+        <a href="{{ url_for('cart.cart') }}">Cart</a>
+        <span class="sep">›</span>
+        <span>Checkout</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="checkout-layout">
+        <div>
+            <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:24px;">Delivery Details</h2>
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('cart.checkout') }}" id="checkout-form">
+                        <input type="hidden" name="paystack_reference" id="paystack_reference" value="">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Full Name *</label>
+                                <input type="text" class="form-input" value="{{ current_user.full_name or '' }}" readonly style="background:#f5f5f5;">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number *</label>
+                                <input type="tel" name="phone" id="phone" class="form-input" value="{{ current_user.phone or '' }}" placeholder="08012345678" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Delivery Address *</label>
+                            <textarea name="address" class="form-textarea" rows="3" placeholder="Enter your full delivery address including street, city and state" required>{{ current_user.address or '' }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Payment Method *</label>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="pay_on_delivery" checked onchange="updatePayBtn(this.value)">
+                                    <div>
+                                        <div style="font-weight:600">💵 Pay on Delivery</div>
+                                        <div style="font-size:0.8rem;color:var(--text-muted)">Cash payment when your order arrives</div>
+                                    </div>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment_method" value="bank_transfer" onchange="updatePayBtn(this.value)">
+                                    <div>
+                                        <div style="font-weight:600">🏦 Bank Transfer</div>
+                                        <div style="font-size:0.8rem;color:var(--text-muted)">Transfer to our account before delivery</div>
+                                    </div>
+                                </label>
+                                <label class="payment-option" style="border-color:#00c3f7;background:linear-gradient(135deg,#e8faff,#f0fff4);">
+                                    <input type="radio" name="payment_method" value="paystack" onchange="updatePayBtn(this.value)">
+                                    <div style="display:flex;align-items:center;gap:10px;">
+                                        <img src="https://website-v3-assets.s3.amazonaws.com/assets/img/hero/Paystack-mark-white-twitter.png"
+                                             onerror="this.style.display='none'"
+                                             style="width:28px;height:28px;border-radius:6px;background:#00c3f7;padding:2px;" alt="Paystack">
+                                        <div>
+                                            <div style="font-weight:700;color:#00c3f7;">💳 Pay with Card (Paystack)</div>
+                                            <div style="font-size:0.8rem;color:var(--text-muted)">Debit/Credit card · Bank · USSD · QR</div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Order Notes (optional)</label>
+                            <textarea name="notes" class="form-textarea" rows="2" placeholder="Any special instructions or notes for your order..."></textarea>
+                        </div>
+
+                        <button type="submit" id="place-order-btn" class="btn-primary" style="width:100%;">Place Order →</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:16px;">Order Summary</h3>
+            <div class="cart-summary">
+                {% for item in items %}
+                <div class="summary-row">
+                    <span>{{ item.product.name[:22] }}{% if item.product.name|length > 22 %}…{% endif %} × {{ item.quantity }}</span>
+                    <span>₦{{ "{:,.0f}".format(item.product.price * item.quantity) }}</span>
+                </div>
+                {% endfor %}
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span>₦{{ "{:,.0f}".format(total) }}</span>
+                </div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;text-align:center;">
+                    {% if total >= 20000 %}🎉 Free delivery applied!{% else %}Delivery fee calculated on confirmation{% endif %}
+                </div>
+            </div>
+
+            <div style="background:var(--green-light);border-radius:10px;padding:16px;margin-top:16px;">
+                <h4 style="color:var(--green);font-weight:700;margin-bottom:8px;">✅ Secure Order</h4>
+                <ul style="font-size:0.82rem;color:var(--text-muted);list-style:none;display:flex;flex-direction:column;gap:6px;">
+                    <li>🔒 Your information is safe</li>
+                    <li>📞 We will call to confirm your order</li>
+                    <li>↩️ 24-hour return policy</li>
+                </ul>
+            </div>
+
+            <div id="paystack-badge" style="display:none;margin-top:16px;background:#e8faff;border:1.5px solid #00c3f7;border-radius:10px;padding:14px;text-align:center;">
+                <div style="font-weight:700;color:#00c3f7;margin-bottom:4px;">🔐 Secured by Paystack</div>
+                <div style="font-size:0.78rem;color:#555;">PCI-DSS compliant · SSL encrypted</div>
+                <div style="font-size:0.75rem;color:#888;margin-top:6px;">Accepts Mastercard, Visa, Verve, Bank, USSD, QR</div>
+                <div style="margin-top:8px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+                    <span style="background:#fff;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:0.7rem;font-weight:700;">VISA</span>
+                    <span style="background:#fff;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:0.7rem;font-weight:700;">MASTERCARD</span>
+                    <span style="background:#fff;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:0.7rem;font-weight:700;">VERVE</span>
+                    <span style="background:#fff;border:1px solid #ddd;border-radius:4px;padding:2px 8px;font-size:0.7rem;font-weight:700;">USSD</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+    const PAYSTACK_PUBLIC_KEY = "{{ paystack_public_key }}";
+    const ORDER_TOTAL_KOBO = {{ (total * 100) | int }};
+    const USER_EMAIL = "{{ current_user.email }}";
+    const USER_NAME = "{{ current_user.full_name or current_user.username }}";
+    const USER_PHONE = "{{ current_user.phone or '' }}";
+
+    function updatePayBtn(method) {
+        const btn = document.getElementById('place-order-btn');
+        const badge = document.getElementById('paystack-badge');
+        if (method === 'paystack') {
+            btn.textContent = '💳 Pay ₦{{ "{:,.0f}".format(total) }} with Paystack →';
+            btn.style.background = 'linear-gradient(135deg, #00c3f7, #00a8d4)';
+            badge.style.display = 'block';
+        } else {
+            btn.textContent = 'Place Order →';
+            btn.style.background = '';
+            badge.style.display = 'none';
+        }
+    }
+
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        const method = document.querySelector('input[name="payment_method"]:checked').value;
+        if (method !== 'paystack') return true;
+
+        e.preventDefault();
+
+        const address = document.querySelector('textarea[name="address"]').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        if (!address || !phone) {
+            alert('Please fill in your delivery address and phone number first.');
+            return false;
+        }
+
+        const handler = PaystackPop.setup({
+            key: PAYSTACK_PUBLIC_KEY,
+            email: USER_EMAIL,
+            amount: ORDER_TOTAL_KOBO,
+            currency: 'NGN',
+            ref: 'OFO-' + new Date().getTime() + '-' + Math.floor(Math.random() * 1000000),
+            metadata: {
+                custom_fields: [
+                    { display_name: "Customer Name", variable_name: "customer_name", value: USER_NAME },
+                    { display_name: "Phone", variable_name: "phone", value: phone }
+                ]
+            },
+            onClose: function() {
+                showPaystackMsg('Payment window closed. Your order was NOT placed.', '#e74c3c');
+            },
+            callback: function(response) {
+                document.getElementById('paystack_reference').value = response.reference;
+                showPaystackMsg('✅ Payment verified! Placing your order...', '#27ae60');
+                setTimeout(function() {
+                    document.getElementById('checkout-form').submit();
+                }, 800);
+            }
+        });
+        handler.openIframe();
+    });
+
+    function showPaystackMsg(msg, color) {
+        let el = document.getElementById('paystack-msg');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'paystack-msg';
+            el.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);padding:14px 28px;border-radius:10px;color:#fff;font-weight:700;font-size:1rem;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:opacity 0.4s;';
+            document.body.appendChild(el);
+        }
+        el.style.background = color;
+        el.textContent = msg;
+        el.style.opacity = '1';
+        setTimeout(function() { el.style.opacity = '0'; }, 4000);
+    }
+</script>
+{% endblock %}

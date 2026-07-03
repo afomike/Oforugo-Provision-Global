@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Products — Oforugo Provision Global{% endblock %}
+{% block content %}
+
+<div class="breadcrumb">
+    <div class="container breadcrumb-inner">
+        <a href="{{ url_for('shop.index') }}">Home</a>
+        <span class="sep">›</span>
+        <span>Products</span>
+        {% if search %}<span class="sep">›</span><span>Search: "{{ search }}"</span>{% endif %}
+    </div>
+</div>
+
+<div class="container" style="padding-top: 24px; padding-bottom: 40px;">
+    <div class="shop-header">
+        <div class="shop-filters">
+            <a href="{{ url_for('shop.products') }}" class="filter-btn {% if not current_category %}active{% endif %}">All</a>
+            {% for cat in categories %}
+            <a href="{{ url_for('shop.products') }}?category={{ cat.id }}" class="filter-btn {% if current_category == cat.id %}active{% endif %}">{{ cat.icon }} {{ cat.name }}</a>
+            {% endfor %}
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+            <span class="results-count">{{ pagination.total }} product{% if pagination.total != 1 %}s{% endif %} found</span>
+            <div class="shop-sort">
+                <select id="sort-select">
+                    <option value="name" {% if sort=='name' %}selected{% endif %}>Sort: Name (A-Z)</option>
+                    <option value="price_asc" {% if sort=='price_asc' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_desc" {% if sort=='price_desc' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="newest" {% if sort=='newest' %}selected{% endif %}>Newest First</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    {% if products %}
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+                <div class="product-img-wrap">
+                    <div class="product-img-placeholder">{{ product.category.icon or '📦' }}</div>
+                    {% if product.featured %}<span class="product-badge">⭐ Featured</span>{% endif %}
+                    {% if product.stock == 0 %}<span class="product-badge product-badge-oos">Out of Stock</span>{% endif %}
+                </div>
+            </a>
+            <div class="product-info">
+                <div class="product-category">{{ product.category.name }}</div>
+                <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+                    <div class="product-name">{{ product.name }}</div>
+                </a>
+                <div class="product-desc">{{ product.description }}</div>
+                <div class="product-footer">
+                    <div>
+                        <div class="product-price">₦{{ "{:,.0f}".format(product.price) }}</div>
+                    </div>
+                    {% if product.stock > 0 %}
+                    <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST">
+                        <button type="submit" class="add-btn">Add to Cart</button>
+                    </form>
+                    {% else %}
+                    <button class="add-btn" disabled style="background:#ccc;cursor:not-allowed">Out of Stock</button>
+                    {% endif %}
+                </div>
+                <div class="stock-info {% if product.stock > 0 and product.stock < 10 %}stock-low{% endif %}">
+                    {% if product.stock > 0 %}{{ product.stock }} in stock{% else %}<span class="stock-out">Out of stock</span>{% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a href="{{ url_for('shop.products', page=pagination.prev_num, category=current_category, search=search, sort=sort) }}" class="page-btn">← Prev</a>
+        {% endif %}
+        {% for p in pagination.iter_pages() %}
+            {% if p %}
+            <a href="{{ url_for('shop.products', page=p, category=current_category, search=search, sort=sort) }}" class="page-btn {% if p == pagination.page %}active{% endif %}">{{ p }}</a>
+            {% else %}
+            <span class="page-btn disabled">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+        <a href="{{ url_for('shop.products', page=pagination.next_num, category=current_category, search=search, sort=sort) }}" class="page-btn">Next →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="cart-empty">
+        <div class="cart-empty-icon">🔍</div>
+        <h3>No products found</h3>
+        <p>Try a different search or browse all categories.</p>
+        <br>
+        <a href="{{ url_for('shop.products') }}" class="btn-green">View All Products</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "admin/base.html" %}
+{% block title %}Admin Dashboard — Oforugo{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+    <h1>Dashboard</h1>
+    <p>Overview of your store's performance</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card green">
+        <div class="stat-card-icon">📦</div>
+        <div class="stat-card-label">Total Orders</div>
+        <div class="stat-card-value">{{ total_orders }}</div>
+    </div>
+    <div class="stat-card gold">
+        <div class="stat-card-icon">💰</div>
+        <div class="stat-card-label">Total Revenue</div>
+        <div class="stat-card-value" style="font-size:1.4rem;">₦{{ "{:,.0f}".format(revenue) }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon">🛍️</div>
+        <div class="stat-card-label">Total Products</div>
+        <div class="stat-card-value">{{ total_products }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon">👥</div>
+        <div class="stat-card-label">Customers</div>
+        <div class="stat-card-value">{{ total_users }}</div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="card">
+        <div class="card-header">
+            <h3>Recent Orders</h3>
+            <a href="{{ url_for('admin.orders') }}" style="font-size:0.82rem;color:var(--green);font-weight:600;">View All →</a>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+                <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                    <td><a href="{{ url_for('admin.order_detail', order_id=order.id) }}" style="color:var(--green);font-weight:600;">#{{ order.id }}</a></td>
+                    <td>{{ order.customer.full_name or order.customer.username }}</td>
+                    <td>₦{{ "{:,.0f}".format(order.total_amount) }}</td>
+                    <td><span class="status-badge status-{{ order.status }}">{{ order.status.title() }}</span></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>⚠️ Low Stock Alert</h3>
+            <a href="{{ url_for('admin.products') }}" style="font-size:0.82rem;color:var(--green);font-weight:600;">Manage →</a>
+        </div>
+        <div style="overflow-x:auto;">
+            {% if low_stock %}
+            <table class="data-table">
+                <thead><tr><th>Product</th><th>Stock</th></tr></thead>
+                <tbody>
+                {% for product in low_stock %}
+                <tr>
+                    <td><a href="{{ url_for('admin.edit_product', product_id=product.id) }}" style="color:var(--green)">{{ product.name[:30] }}</a></td>
+                    <td><span style="color:{% if product.stock == 0 %}var(--red){% else %}#e67e22{% endif %};font-weight:700;">{{ product.stock }}</span></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.88rem;">✅ All products well stocked</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div style="margin-top:20px; padding:20px; background:white; border-radius:var(--radius); box-shadow:var(--shadow); display:flex; gap:12px; flex-wrap:wrap;">
+    <a href="{{ url_for('admin.add_product') }}" class="btn-green">+ Add Product</a>
+    <a href="{{ url_for('admin.orders') }}?status=pending" class="btn-primary">{{ pending_orders }} Pending Orders</a>
+    <a href="{{ url_for('admin.users') }}" class="btn-outline" style="border-color:var(--green);color:var(--green);">View All Customers</a>
+</div>
+{% endblock %}

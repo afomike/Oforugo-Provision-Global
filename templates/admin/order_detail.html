@@ -1,0 +1,70 @@
+{% extends "admin/base.html" %}
+{% block title %}Order #{{ order.id }} — Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-page-header">
+    <h1>Order #{{ order.id }}</h1>
+    <p><a href="{{ url_for('admin.orders') }}" style="color:var(--green);">← Back to Orders</a></p>
+</div>
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+    <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+            <div class="card-header"><h3>Order Items</h3></div>
+            <div class="card-body">
+                <table class="order-items-table" style="width:100%;border-collapse:collapse;">
+                    <thead><tr style="border-bottom:2px solid var(--border)"><th style="padding:10px;text-align:left;font-size:0.82rem;color:var(--text-muted);">Product</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr></thead>
+                    <tbody>
+                    {% for item in order.items %}
+                    <tr style="border-bottom:1px solid var(--border)">
+                        <td style="padding:12px 10px;font-weight:600;">{{ item.product.name }}</td>
+                        <td style="padding:12px 10px;">{{ item.quantity }}</td>
+                        <td style="padding:12px 10px;">₦{{ "{:,.0f}".format(item.unit_price) }}</td>
+                        <td style="padding:12px 10px;font-weight:700;color:var(--green);">₦{{ "{:,.0f}".format(item.unit_price * item.quantity) }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                    <tr><td colspan="3" style="padding:14px 10px;font-weight:700;text-align:right;font-size:1rem;">Total:</td><td style="padding:14px 10px;font-weight:800;font-size:1.15rem;color:var(--green);">₦{{ "{:,.0f}".format(order.total_amount) }}</td></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>Customer Information</h3></div>
+            <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div><div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Customer Name</div><div style="font-weight:600;">{{ order.customer.full_name or order.customer.username }}</div></div>
+                <div><div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Email</div><div>{{ order.customer.email }}</div></div>
+                <div><div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Phone</div><div style="font-weight:600;">{{ order.phone }}</div></div>
+                <div><div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Payment Method</div><div>{{ order.payment_method.replace('_', ' ').title() }}</div></div>
+                <div style="grid-column:1/-1;"><div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Delivery Address</div><div>{{ order.delivery_address }}</div></div>
+                {% if order.notes %}<div style="grid-column:1/-1;"><div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;margin-bottom:4px;">Notes</div><div>{{ order.notes }}</div></div>{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+            <div class="card-header"><h3>Update Status</h3></div>
+            <div class="card-body">
+                <div style="margin-bottom:12px;">Current: <span class="status-badge status-{{ order.status }}">{{ order.status.title() }}</span></div>
+                <form action="{{ url_for('admin.update_order_status', order_id=order.id) }}" method="POST" style="display:flex;flex-direction:column;gap:8px;">
+                    <select name="status" class="form-select">
+                        {% for s in ['pending','confirmed','processing','shipped','delivered','cancelled'] %}
+                        <option value="{{ s }}" {% if s == order.status %}selected{% endif %}>{{ s.title() }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn-green">Update Status</button>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3>Order Info</h3></div>
+            <div class="card-body" style="font-size:0.88rem;display:flex;flex-direction:column;gap:10px;">
+                <div><span style="color:var(--text-muted);">Order ID:</span> <strong>#{{ order.id }}</strong></div>
+                <div><span style="color:var(--text-muted);">Placed:</span> {{ order.created_at.strftime('%d %b %Y, %H:%M') }}</div>
+                <div><span style="color:var(--text-muted);">Total Amount:</span> <strong style="color:var(--green);">₦{{ "{:,.0f}".format(order.total_amount) }}</strong></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

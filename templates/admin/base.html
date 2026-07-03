@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <h3>Admin Panel</h3>
+            <p>{{ current_user.full_name or current_user.username }}</p>
+        </div>
+        <nav class="admin-nav">
+            <a href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+            <a href="{{ url_for('admin.orders') }}">📦 Orders</a>
+            <a href="{{ url_for('admin.products') }}">🛍️ Products</a>
+            <a href="{{ url_for('admin.categories') }}">🗂️ Categories</a>
+            <a href="{{ url_for('admin.users') }}">👥 Users</a>
+            <a href="{{ url_for('shop.index') }}" style="margin-top:20px;border-top:1px solid rgba(255,255,255,0.1);padding-top:12px;">🏠 View Store</a>
+        </nav>
+    </aside>
+    <div class="admin-main">
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

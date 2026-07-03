@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — Oforugo Provision Global{% endblock %}
+{% block content %}
+
+<div class="breadcrumb">
+    <div class="container breadcrumb-inner">
+        <a href="{{ url_for('shop.index') }}">Home</a>
+        <span class="sep">›</span>
+        <a href="{{ url_for('shop.products') }}">Products</a>
+        <span class="sep">›</span>
+        <a href="{{ url_for('shop.products') }}?category={{ product.category_id }}">{{ product.category.name }}</a>
+        <span class="sep">›</span>
+        <span>{{ product.name }}</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="product-detail">
+        <div class="product-detail-img">
+            <div class="placeholder">{{ product.category.icon or '📦' }}</div>
+        </div>
+        <div class="product-detail-info">
+            <div class="product-category" style="font-size:0.85rem; font-weight:700; color:var(--green); margin-bottom:8px;">{{ product.category.name }}</div>
+            <h1>{{ product.name }}</h1>
+            <div class="product-detail-price">₦{{ "{:,.0f}".format(product.price) }}</div>
+            <div class="product-detail-meta">
+                <span class="meta-tag">📦 {{ product.stock }} in stock</span>
+                <span class="meta-tag">{{ product.category.icon }} {{ product.category.name }}</span>
+                {% if product.featured %}<span class="meta-tag" style="background:var(--gold);color:white">⭐ Featured</span>{% endif %}
+            </div>
+            <p class="product-detail-desc">{{ product.description }}</p>
+
+            {% if product.stock > 0 %}
+            <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST" class="qty-form">
+                <div>
+                    <label class="form-label">Quantity</label>
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+                </div>
+                <div style="margin-top:auto">
+                    <button type="submit" class="btn-primary">🛒 Add to Cart</button>
+                </div>
+            </form>
+            {% else %}
+            <div style="background:#f8d7da; color:#721c24; padding:14px 16px; border-radius:8px; font-weight:600; margin-bottom:20px;">
+                ❌ This product is currently out of stock.
+            </div>
+            {% endif %}
+
+            <div style="background: var(--green-light); border-radius: 10px; padding: 20px; margin-top: 16px;">
+                <h4 style="font-weight:700; margin-bottom:10px; color:var(--green);">✅ Buying Assurance</h4>
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem; color: var(--text-muted);">
+                    <li>🚚 Fast delivery across Nigeria</li>
+                    <li>🔒 Pay on delivery available</li>
+                    <li>✅ 100% authentic products</li>
+                    <li>↩️ Easy return policy</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    {% if related %}
+    <div class="related-section">
+        <h3 style="font-size:1.3rem; font-weight:800; margin-bottom:20px;">Related Products</h3>
+        <div class="related-grid">
+            {% for prod in related %}
+            <div class="product-card">
+                <a href="{{ url_for('shop.product_detail', product_id=prod.id) }}">
+                    <div class="product-img-wrap">
+                        <div class="product-img-placeholder">{{ prod.category.icon or '📦' }}</div>
+                    </div>
+                </a>
+                <div class="product-info">
+                    <a href="{{ url_for('shop.product_detail', product_id=prod.id) }}">
+                        <div class="product-name">{{ prod.name }}</div>
+                    </a>
+                    <div class="product-footer">
+                        <div class="product-price">₦{{ "{:,.0f}".format(prod.price) }}</div>
+                        {% if prod.stock > 0 %}
+                        <form action="{{ url_for('cart.add_to_cart', product_id=prod.id) }}" method="POST">
+                            <button type="submit" class="add-btn">Add</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Oforugo Provision Global — Nigeria's Trusted Provision Store{% endblock %}
+{% block content %}
+
+<section class="hero">
+    <div class="container hero-inner">
+        <div>
+            <div class="hero-badge">🇳🇬 Nigeria's #1 Provision Store</div>
+            <h1>Quality Provisions<br>at <span>Fair Prices</span></h1>
+            <p>Shop rice, oil, beverages, household essentials and more. Fast delivery across Nigeria. Trusted by thousands of families.</p>
+            <div class="hero-actions">
+                <a href="{{ url_for('shop.products') }}" class="btn-primary">Shop Now →</a>
+                <a href="{{ url_for('auth.register') }}" class="btn-outline">Create Account</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat"><div class="hero-stat-num">{{ total_products }}+</div><div class="hero-stat-label">Products</div></div>
+                <div class="hero-stat"><div class="hero-stat-num">5K+</div><div class="hero-stat-label">Customers</div></div>
+                <div class="hero-stat"><div class="hero-stat-num">100%</div><div class="hero-stat-label">Authentic</div></div>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-card">
+                <div class="hero-card-icon">🚚</div>
+                <div><div class="hero-card-title">Fast Delivery</div><div class="hero-card-sub">Delivered to your doorstep</div></div>
+            </div>
+            <div class="hero-card">
+                <div class="hero-card-icon">✅</div>
+                <div><div class="hero-card-title">Quality Guaranteed</div><div class="hero-card-sub">100% authentic products</div></div>
+            </div>
+            <div class="hero-card">
+                <div class="hero-card-icon">💰</div>
+                <div><div class="hero-card-title">Best Prices</div><div class="hero-card-sub">Fair market prices always</div></div>
+            </div>
+            <div class="hero-card">
+                <div class="hero-card-icon">📦</div>
+                <div><div class="hero-card-title">Bulk Orders</div><div class="hero-card-sub">Wholesale available</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features-strip">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature-item"><div class="feature-icon">🚚</div><div><div class="feature-title">Free Delivery</div><div class="feature-sub">On orders above ₦20,000</div></div></div>
+            <div class="feature-item"><div class="feature-icon">🔒</div><div><div class="feature-title">Secure Payment</div><div class="feature-sub">Pay on delivery available</div></div></div>
+            <div class="feature-item"><div class="feature-icon">↩️</div><div><div class="feature-title">Easy Returns</div><div class="feature-sub">Hassle-free return policy</div></div></div>
+            <div class="feature-item"><div class="feature-icon">📞</div><div><div class="feature-title">24/7 Support</div><div class="feature-sub">Always here to help you</div></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Browse by Category</div>
+            <h2>Shop Our Categories</h2>
+            <p>Everything your household needs, all in one place</p>
+        </div>
+        <div class="categories-grid">
+            {% for cat in categories %}
+            <a href="{{ url_for('shop.products') }}?category={{ cat.id }}" class="category-card">
+                <div class="category-icon">{{ cat.icon or '📦' }}</div>
+                <div class="category-name">{{ cat.name }}</div>
+                <div class="category-count">{{ cat.products | selectattr('active') | list | length }} items</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section" style="background: white; margin: 0 -20px; padding: 60px 20px;">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Hand-picked for you</div>
+            <h2>Featured Products</h2>
+            <p>Our most popular and best-value provisions</p>
+        </div>
+        <div class="products-grid">
+            {% for product in featured %}
+            <div class="product-card">
+                <div class="product-img-wrap">
+                    <div class="product-img-placeholder">{{ product.category.icon or '📦' }}</div>
+                    {% if product.featured %}<span class="product-badge">⭐ Featured</span>{% endif %}
+                    {% if product.stock == 0 %}<span class="product-badge product-badge-oos">Out of Stock</span>{% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ product.category.name }}</div>
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-desc">{{ product.description }}</div>
+                    <div class="product-footer">
+                        <div>
+                            <div class="product-price">₦{{ "{:,.0f}".format(product.price) }}</div>
+                        </div>
+                        {% if product.stock > 0 %}
+                        <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST">
+                            <button type="submit" class="add-btn">Add to Cart</button>
+                        </form>
+                        {% else %}
+                        <button class="add-btn" disabled style="background:#ccc;cursor:not-allowed">Out of Stock</button>
+                        {% endif %}
+                    </div>
+                    <div class="stock-info {% if product.stock < 10 %}stock-low{% endif %}">
+                        {% if product.stock > 0 %}{{ product.stock }} in stock{% else %}<span class="stock-out">Out of stock</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div style="text-align:center; margin-top:32px">
+            <a href="{{ url_for('shop.products') }}" class="btn-green">View All Products →</a>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div style="background: linear-gradient(135deg, var(--green), var(--green-dark)); border-radius: 16px; padding: 50px; color: white; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center;">
+            <div>
+                <div class="hero-badge" style="background: var(--gold)">Special Offer</div>
+                <h2 style="font-size: 2rem; font-weight: 800; margin: 12px 0;">Bulk Orders Welcome!</h2>
+                <p style="opacity: 0.85; margin-bottom: 20px;">Planning a big event or stocking up your shop? We offer great wholesale prices. Call us or register for a business account.</p>
+                <a href="{{ url_for('auth.register') }}" class="btn-primary">Register for Wholesale</a>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 20px; text-align:center;">
+                    <div style="font-size:2rem;font-weight:800;color:var(--gold)">5%</div>
+                    <div style="font-size:0.85rem;opacity:0.8">Off orders above ₦100k</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 20px; text-align:center;">
+                    <div style="font-size:2rem;font-weight:800;color:var(--gold)">10%</div>
+                    <div style="font-size:0.85rem;opacity:0.8">Off orders above ₦500k</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 20px; text-align:center;">
+                    <div style="font-size:2rem;font-weight:800;color:var(--gold)">Free</div>
+                    <div style="font-size:0.85rem;opacity:0.8">Delivery on orders over ₦20k</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.15); border-radius: 12px; padding: 20px; text-align:center;">
+                    <div style="font-size:2rem;font-weight:800;color:var(--gold)">24h</div>
+                    <div style="font-size:0.85rem;opacity:0.8">Priority order processing</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
