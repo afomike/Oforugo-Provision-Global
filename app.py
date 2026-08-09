@@ -9,8 +9,29 @@ load_dotenv()
 db = SQLAlchemy()
 login_manager = LoginManager()
 
+def normalize_image_url(image_url):
+    if not image_url:
+        return '/static/images/placeholder.jpg'
+
+    value = str(image_url).strip()
+    if value.startswith(('http://', 'https://')):
+        return value
+
+    value = value.replace('\\', '/')
+    value = value.lstrip('/')
+
+    if value.startswith('static/'):
+        return '/' + value
+    if value.startswith('images/'):
+        return '/static/' + value
+    if value.startswith('uploads/'):
+        return '/' + value
+    return '/static/images/' + value if not value.startswith('images/') else '/static/' + value
+
+
 def create_app():
     app = Flask(__name__)
+    app.jinja_env.globals['normalize_image_url'] = normalize_image_url
     app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'oforugo-secret-key-2024')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', '')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

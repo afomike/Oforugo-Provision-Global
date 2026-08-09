@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from functools import wraps
-from app import db
+from app import db, normalize_image_url
 from models import Product, Category, Order, User
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
@@ -63,7 +63,7 @@ def add_product():
             return render_template('admin/product_form.html', categories=categories, product=None)
         product = Product(name=name, description=description, price=float(price),
                           stock=int(stock), category_id=category_id,
-                          image_url=image_url or '/static/images/placeholder.jpg',
+                          image_url=normalize_image_url(image_url),
                           featured=featured)
         db.session.add(product)
         db.session.commit()
@@ -84,7 +84,7 @@ def edit_product(product_id):
         product.price = float(request.form.get('price', 0))
         product.stock = int(request.form.get('stock', 0))
         product.category_id = int(request.form.get('category_id'))
-        product.image_url = request.form.get('image_url', '').strip() or '/static/images/placeholder.jpg'
+        product.image_url = normalize_image_url(request.form.get('image_url', ''))
         product.featured = request.form.get('featured') == 'on'
         product.active = request.form.get('active') == 'on'
         db.session.commit()

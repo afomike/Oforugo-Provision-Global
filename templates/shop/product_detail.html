@@ -17,7 +17,9 @@
 <div class="container">
     <div class="product-detail">
         <div class="product-detail-img">
-            <div class="placeholder">{{ product.category.icon or '📦' }}</div>
+            <img src="{{ normalize_image_url(product.image_url) }}"
+                 alt="{{ product.name }}"
+                 onerror="this.onerror=null;this.src='/static/images/placeholder.jpg';">
         </div>
         <div class="product-detail-info">
             <div class="product-category" style="font-size:0.85rem; font-weight:700; color:var(--green); margin-bottom:8px;">{{ product.category.name }}</div>
@@ -66,7 +68,9 @@
             <div class="product-card">
                 <a href="{{ url_for('shop.product_detail', product_id=prod.id) }}">
                     <div class="product-img-wrap">
-                        <div class="product-img-placeholder">{{ prod.category.icon or '📦' }}</div>
+                        <img src="{{ normalize_image_url(prod.image_url) }}"
+                             alt="{{ prod.name }}"
+                             onerror="this.onerror=null;this.src='/static/images/placeholder.jpg';">
                     </div>
                 </a>
                 <div class="product-info">

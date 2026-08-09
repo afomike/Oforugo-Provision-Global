@@ -36,8 +36,9 @@
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Image URL</label>
-                <input type="text" name="image_url" class="form-input" value="{{ product.image_url if product else '' }}" placeholder="/static/images/product.jpg">
+                <label class="form-label">Image URL or Static File</label>
+                <input type="text" name="image_url" class="form-input" value="{{ product.image_url if product else '' }}" placeholder="https://example.com/image.jpg or static/images/product.jpg or images/product.jpg">
+                <small style="display:block; margin-top:6px; color:var(--text-muted);">You can paste an online image URL or use a file from the static/images folder, for example: /static/images/rice.jpg</small>
             </div>
             <div style="display:flex;gap:24px;margin-bottom:24px;">
                 <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500;">
